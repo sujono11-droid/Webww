@@ -1,0 +1,65 @@
+CREATE DATABASE game_diamond_store;
+
+USE game_diamond_store;
+
+-- Tabel games
+CREATE TABLE games (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    logo VARCHAR(255),
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabel products (diamond packages)
+CREATE TABLE products (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    game_id INT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    diamond_amount VARCHAR(50) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    discount_price DECIMAL(10,2),
+    is_active BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (game_id) REFERENCES games(id)
+);
+
+-- Tabel users
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    phone VARCHAR(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabel orders
+CREATE TABLE orders (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    product_id INT NOT NULL,
+    game_id INT NOT NULL,
+    player_id VARCHAR(100) NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    payment_method VARCHAR(50),
+    payment_status ENUM('pending', 'paid', 'failed') DEFAULT 'pending',
+    diamond_status ENUM('pending', 'processed', 'delivered', 'failed') DEFAULT 'pending',
+    payment_proof VARCHAR(255),
+    transaction_id VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (product_id) REFERENCES products(id),
+    FOREIGN KEY (game_id) REFERENCES games(id)
+);
+
+-- Tabel transactions (untuk log pembayaran)
+CREATE TABLE transactions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    payment_method VARCHAR(50) NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    payment_date TIMESTAMP NULL,
+    raw_response TEXT,
+    FOREIGN KEY (order_id) REFERENCES orders(id)
+);
